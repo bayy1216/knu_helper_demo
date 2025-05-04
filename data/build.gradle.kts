@@ -31,23 +31,17 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
 
     //hlit
     implementation(libs.hilt.android)
     kapt(libs.dagger.hilt.compiler)
-    val ktor_version = "3.1.2"
-    implementation("io.ktor:ktor-client-core:$ktor_version")
-    implementation("io.ktor:ktor-client-cio:$ktor_version")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
-    implementation("io.ktor:ktor-client-logging:$ktor_version")
-    implementation("androidx.datastore:datastore-preferences:1.1.4")
+    implementation(libs.bundles.ktor)
+    implementation(libs.androidx.datastore.preferences)
 
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }
 
 kapt {
