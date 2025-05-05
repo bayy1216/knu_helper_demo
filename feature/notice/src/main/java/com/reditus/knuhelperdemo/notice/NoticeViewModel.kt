@@ -49,13 +49,19 @@ class NoticeViewModel @Inject constructor(
     private val _noticePagingState = MutableStateFlow<UiState<PagingData<NoticeUiState>>>(UiState.Loading)
     val noticePagingState = _noticePagingState.asStateFlow()
 
-    private val _userSubscribeSites = MutableStateFlow<List<SubscribeModel>>(emptyList())
+    private val _userSubscribeSites = MutableStateFlow<UiState<List<SubscribeModel>>>(UiState.Loading)
 
     init {
         viewModelScope.launch {
-            val userSubScribes = userSubscribeRepository.getSubscribes()
-            _userSubscribeSites.update {
-                userSubScribes.data
+            try{
+                val userSubScribes = userSubscribeRepository.getSubscribes()
+                _userSubscribeSites.update {
+                    UiState.Success(userSubScribes.data)
+                }
+            }catch (e: Exception){
+                _userSubscribeSites.update {
+                    UiState.Error(e)
+                }
             }
 
         }

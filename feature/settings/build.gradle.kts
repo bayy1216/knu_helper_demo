@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     id(libs.plugins.kotlin.kapt.get().pluginId)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -45,6 +46,8 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.navigation.compose)
     //hlit
     implementation(libs.hilt.android)
     kapt(libs.dagger.hilt.compiler)

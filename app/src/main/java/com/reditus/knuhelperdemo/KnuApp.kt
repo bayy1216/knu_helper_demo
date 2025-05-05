@@ -113,11 +113,6 @@ class KnuAppState(
             initialValue = false,
         )
 
-    /**
-     * Map of top level destinations to be used in the TopBar, BottomBar and NavRail. The key is the
-     * route.
-     */
-    val topLevelDestinations: List<TopLevelDestination> = TopLevelDestination.valueLists()
 }
 
 sealed class TopLevelDestination() {
