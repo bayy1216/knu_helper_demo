@@ -83,7 +83,7 @@ object DataModule {
                     headers.append(HttpHeaders.Authorization, "Bearer ${jwtToken.accessToken}")
                 }
             }
-            val result = execute(request)
+            val result = execute(originRequest)
 
             if(result.response.status.value == 401){
                 refreshMutex.withLock {// 리프래시 토큰 동기화 락 진입

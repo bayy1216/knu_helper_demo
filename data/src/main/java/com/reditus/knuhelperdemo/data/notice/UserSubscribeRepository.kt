@@ -16,7 +16,7 @@ class UserSubscribeRepository @Inject constructor(
 ){
     /// 구독 사이트 조회
     suspend fun getSubscribes(): SubscribesRes {
-        return client.get("/user/favorite-sote").body()
+        return client.get("/user/favorite-site").body()
     }
 
     /// 구독 사이트 추가
