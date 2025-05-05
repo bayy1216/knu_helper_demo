@@ -43,6 +43,12 @@ class JwtRepository @Inject constructor(
         }
     }
 
+    suspend fun saveAccessToken(accessToken: String) {
+        dataStore.edit { prefs ->
+            prefs[ACCESS_TOKEN_KEY] = accessToken
+        }
+    }
+
     companion object{
         private val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")
         private val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token")
