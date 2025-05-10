@@ -18,13 +18,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.reditus.knuhelperdemo.navigation.BottomNavDestination
@@ -42,50 +45,7 @@ fun KnuNavHost(
     appState: KnuAppState,
     startDestination: TopLevelDestination = TopLevelDestination.START,
 ) {
-    Timber.d("StartDestination: $startDestination")
     val navController = appState.navController
-    NavHost(
-        navController = navController,
-        startDestination = startDestination,
-    ) {
-        composable<TopLevelDestination.START> { backEntry ->
-            SignUpScreen(
-                onClickNextScreen = {
-                    navController.navigate(
-                        TopLevelDestination.MAIN,
-                        navOptions {
-                            popUpTo(TopLevelDestination.START) {
-                                inclusive = true
-                            }
-                        },
-                    )
-                },
-            )
-        }
-        composable<TopLevelDestination.AUTH> { backEntry ->
-            SignUpScreen(
-                onClickNextScreen = {
-                    navController.navigate(
-                        TopLevelDestination.MAIN,
-                        navOptions {
-                            popUpTo(TopLevelDestination.AUTH) {
-                                inclusive = true
-                            }
-                        },
-                    )
-                },
-            )
-        }
-        composable<TopLevelDestination.MAIN> { backEntry ->
-            MainNavHost()
-        }
-    }
-}
-
-
-@Composable
-fun MainNavHost() {
-    val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
@@ -105,24 +65,12 @@ fun MainNavHost() {
         content = { paddingValues->
             NavHost(
                 navController = navController,
-                startDestination = BottomNavDestination.NOTICE.route,
+                startDestination = startDestination,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                composable<BottomRoute.NoticeRoute> { backEntry ->
-                    NoticeScreen(
-                        noticeViewModel = hiltViewModel(),
-                    )
-                }
-                composable<BottomRoute.FavoriteRoute> { backEntry ->
-                    NoticeScreen(
-                        noticeViewModel = hiltViewModel(),
-                    )
-                }
-                settingsGraph(
-                    navController = navController,
-                )
+                rootGraph(navController = navController)
             }
         },
         bottomBar = {
@@ -147,16 +95,74 @@ fun MainNavHost() {
     )
 }
 
+fun NavGraphBuilder.rootGraph(
+    navController: NavController
+){
+    composable<TopLevelDestination.START> { backEntry ->
+        SignUpScreen(
+            onClickNextScreen = {
+                navController.navigate(
+                    TopLevelDestination.MAIN,
+                    navOptions {
+                        popUpTo(TopLevelDestination.START) {
+                            inclusive = true
+                        }
+                    },
+                )
+            },
+        )
+    }
+    composable<TopLevelDestination.AUTH> { backEntry ->
+        SignUpScreen(
+            onClickNextScreen = {
+                navController.navigate(
+                    TopLevelDestination.MAIN,
+                    navOptions {
+                        popUpTo(TopLevelDestination.AUTH) {
+                            inclusive = true
+                        }
+                    },
+                )
+            },
+        )
+    }
+    mainGraph(navController = navController)
+}
+
+fun NavGraphBuilder.mainGraph(
+    navController: NavController
+){
+    navigation<TopLevelDestination.MAIN>(
+        startDestination = BottomRoute.NoticeRoute,
+    ){
+        composable<BottomRoute.NoticeRoute> { backEntry ->
+            NoticeScreen(
+                noticeViewModel = hiltViewModel(),
+            )
+        }
+        composable<BottomRoute.FavoriteRoute> { backEntry ->
+            NoticeScreen(
+                noticeViewModel = hiltViewModel(),
+            )
+        }
+        settingsGraph(
+            navController = navController,
+        )
+    }
+}
+
+
 @Composable
 fun KnuBottomBar(
     modifier: Modifier = Modifier,
+    height: Dp = 60.dp,
     currentDestination: BottomNavDestination,
     onDestinationClick: (BottomNavDestination)->Unit,
 ){
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(60.dp),
+            .height(height),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
