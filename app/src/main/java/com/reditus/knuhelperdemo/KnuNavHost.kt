@@ -49,11 +49,6 @@ fun KnuNavHost(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val showBottomBar = currentDestination?.let{
-        BottomNavDestination.entries.map { it.route }.any{ route->
-            currentDestination.hasRoute(route::class)
-        }
-    } ?: false
     val currentBottomRoute = currentDestination?.let {
         BottomNavDestination.entries.firstOrNull { route->
             currentDestination.hasRoute(route.route::class)
@@ -74,7 +69,7 @@ fun KnuNavHost(
             }
         },
         bottomBar = {
-            if(showBottomBar && currentBottomRoute != null){
+            if(currentBottomRoute != null){
                 KnuBottomBar(
                     // 내비게이션 바만큼 패딩을 추가하여 겹치지 않게 처리
                     modifier = Modifier.padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
