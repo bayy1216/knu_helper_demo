@@ -30,8 +30,8 @@ import timber.log.Timber
 
 enum class BottomNavDestination {
     NOTICE,
-    SETTINGS,
     FAVORITE,
+    SETTINGS,
 }
 @Serializable
 data object NoticeRoute

@@ -7,13 +7,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.reditus.core.design.KnuTheme
+import com.reditus.core.design.common.DefaultLayout
+import com.reditus.core.design.common.ErrorContent
+import com.reditus.core.design.common.LoadingSpinner
 import com.reditus.core.design.notice.NoticeCard
 import com.reditus.core.system.PagingData
 import com.reditus.core.system.PagingState
@@ -25,23 +28,33 @@ fun NoticeScreen(
     noticeViewModel: NoticeViewModel = hiltViewModel(),
 ) {
     val notices = noticeViewModel.noticePagingState.collectAsStateWithLifecycle()
-    when(val state = notices.value){
-        is UiState.Error -> {
-
-        }
-        UiState.Loading -> {
-
-        }
-        is UiState.Success ->{
-            NoticeScreen(
-                notices = state.data,
-                onRefresh = {
-                    noticeViewModel.getNotices()
-                }
-            )
+    LaunchedEffect(Unit) {
+        noticeViewModel.getNotices()
+    }
+    DefaultLayout {
+        when(val state = notices.value){
+            is UiState.Error -> {
+                val errorMsg = state.exception.message
+                ErrorContent(
+                    errorMsg,
+                    onRetry =  {
+                        noticeViewModel.getNotices()
+                    }
+                )
+            }
+            UiState.Loading -> {
+                LoadingSpinner()
+            }
+            is UiState.Success ->{
+                NoticeScreen(
+                    notices = state.data,
+                    onRefresh = {
+                        noticeViewModel.getNotices()
+                    }
+                )
+            }
         }
     }
-
 }
 
 @Composable

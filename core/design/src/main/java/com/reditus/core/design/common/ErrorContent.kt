@@ -17,7 +17,7 @@ import com.reditus.core.design.KnuThemes
 
 @Composable
 fun ErrorContent(
-    errorMessage: String,
+    errorMessage: String?,
     onRetry: () -> Unit,
 ) {
     Column(
@@ -26,7 +26,7 @@ fun ErrorContent(
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            text = errorMessage,
+            text = errorMessage ?: "잠시 후, 다시 시도해 주세요.",
             modifier = Modifier.padding(16.dp),
         )
         Button(
