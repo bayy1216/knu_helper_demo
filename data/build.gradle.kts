@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +8,15 @@ plugins {
     id(libs.plugins.kotlin.kapt.get().pluginId)
     alias(libs.plugins.kotlin.serialization)
 }
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+
+val serverHost = localProperties["server.host"] as String
+val serverPort = (localProperties["server.port"] as String).toInt()
+val isHttps = (localProperties["server.isHttps"] as String).toBoolean()
 
 android {
     namespace = "com.reditus.knuhelperdemo.data"
@@ -12,8 +24,10 @@ android {
 
     defaultConfig {
         minSdk = 27
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "SERVER_HOST", "\"$serverHost\"")
+        buildConfigField("int", "SERVER_PORT", "$serverPort")
+        buildConfigField("boolean","SERVER_IS_HTTPS", "$isHttps")
     }
 
     buildTypes {

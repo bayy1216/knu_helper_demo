@@ -14,6 +14,7 @@ import com.reditus.core.design.common.DefaultLayout
 @Composable
 fun SettingsScreen(
     onClickSiteSettings: () -> Unit = {},
+    onTestApi: ()-> Unit= {}
 ) {
     DefaultLayout(
         title = "Settings",
@@ -27,6 +28,13 @@ fun SettingsScreen(
             ) {
                 Text(
                     text = "Settings",
+                )
+            }
+            TextButton(
+                onClick = { onTestApi() },
+            ) {
+                Text(
+                    text = "CallApi",
                 )
             }
 

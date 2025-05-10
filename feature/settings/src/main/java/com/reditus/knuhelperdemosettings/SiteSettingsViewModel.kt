@@ -143,4 +143,10 @@ class SiteSettingsViewModel @Inject constructor(
             }
         }
     }
+
+    fun testApi() {
+        viewModelScope.launch {
+            userSubscribeRepository.getSubscribes()
+        }
+    }
 }

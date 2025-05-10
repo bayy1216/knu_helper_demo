@@ -9,6 +9,8 @@ import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIOEngineConfig
 import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.authProvider
+import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -22,8 +24,6 @@ import io.ktor.http.URLProtocol
 import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 
 
@@ -68,7 +68,6 @@ fun HttpClientConfig<CIOEngineConfig>.setupServer(
 fun HttpClientConfig<CIOEngineConfig>.setupAuth(
     jwtRepository: JwtRepository,
     sendWithoutJwtUrls: List<String>,
-    refreshMutex: Mutex = Mutex(),
 ) {
     install(Auth) {
         bearer {
@@ -82,35 +81,23 @@ fun HttpClientConfig<CIOEngineConfig>.setupAuth(
                 }
             }
             refreshTokens {
-                val jwt = jwtRepository.getJwtFlow().first()
-                if (jwt != null) {
+                if (oldTokens != null) {
+                    val jwt = oldTokens!!
+                    return@refreshTokens try {
+                        val res = client.post("/auth/token") {
+                            headers[HttpHeaders.Authorization] = "Bearer ${jwt.refreshToken}"
+                        }.body<AccessTokenRes>()
+                        jwtRepository.saveAccessToken(res.accessToken)
 
-                    /// Lock 진입
-                    val accessToken = refreshMutex.withLock {
-                        val currToken = jwtRepository.getJwtFlow().first()
-
-                        /// Lock 진입 전 토큰과 현재 토큰이 다르면, 다른 스레드에서 이미 갱신된 것
-                        if (currToken != null && currToken.accessToken != jwt.accessToken) {
-                            return@refreshTokens BearerTokens(
-                                accessToken = currToken.accessToken,
-                                refreshToken = currToken.refreshToken
-                            )
-                        }
-                        try {
-                            val res = client.post("/auth/token") {
-                                headers[HttpHeaders.Authorization] = "Bearer ${jwt.refreshToken}"
-                            }.body<AccessTokenRes>()
-                            jwtRepository.saveAccessToken(res.accessToken)
-                            res.accessToken
-                        } catch (_: Exception) {
-                            jwtRepository.delete()
-                            return@refreshTokens null
-                        }
-                    }/// Lock 해제
-                    BearerTokens(
-                        accessToken = accessToken,
-                        refreshToken = jwt.refreshToken
-                    )
+                        BearerTokens(
+                            accessToken = res.accessToken,
+                            refreshToken = jwt.refreshToken
+                        )
+                    } catch (_: Exception) {
+                        jwtRepository.delete()
+                        client.authProvider<BearerAuthProvider>()?.clearToken()
+                        null
+                    }
                 } else {
                     // Emit Refresh Event
                     null

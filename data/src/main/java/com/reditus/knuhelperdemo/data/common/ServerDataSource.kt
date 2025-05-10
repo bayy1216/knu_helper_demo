@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.reditus.knuhelperdemo.data.BuildConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -26,14 +27,10 @@ class ServerDataSource @Inject constructor(
             val serverUrl = prefs[SERVER_URL_KEY]
             val serverPort = prefs[SERVER_PORT_KEY]
             val isHttps = prefs[IS_HTTPS_KEY]
-            if (serverUrl != null && serverPort != null && isHttps != null) {
+            return@map if (serverUrl != null && serverPort != null && isHttps != null) {
                 ServerInfo(serverUrl, serverPort, isHttps)
             } else {
-                ServerInfo(
-                    serverHost = "104.198.35.15",
-                    serverPort = 8080,
-                    isHttps = false,
-                )
+                DEFAULT_SERVER_INFO
             }
         }
     }
@@ -47,6 +44,11 @@ class ServerDataSource @Inject constructor(
     }
 
     companion object{
+        private val DEFAULT_SERVER_INFO = ServerInfo(
+            serverHost = BuildConfig.SERVER_HOST,
+            serverPort = BuildConfig.SERVER_PORT,
+            isHttps = BuildConfig.SERVER_IS_HTTPS,
+        )
         private val SERVER_URL_KEY = stringPreferencesKey("server_url")
         private val SERVER_PORT_KEY = intPreferencesKey("server_port")
         private val IS_HTTPS_KEY = booleanPreferencesKey("is_https")
