@@ -84,6 +84,7 @@ dependencies {
     implementation(project(":core:system"))
     implementation(project(":feature:notice"))
     implementation(project(":feature:settings"))
+    implementation(project(":core:navigation"))
 }
 
 

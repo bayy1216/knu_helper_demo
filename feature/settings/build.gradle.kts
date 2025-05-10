@@ -69,6 +69,7 @@ dependencies {
     implementation(project(":data"))
     implementation(project(":core:design"))
     implementation(project(":core:system"))
+    implementation(project(":core:navigation"))
 }
 
 
