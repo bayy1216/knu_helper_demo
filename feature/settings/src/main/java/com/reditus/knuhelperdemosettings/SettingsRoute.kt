@@ -4,10 +4,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.reditus.knuhelperdemo.navigation.BottomRoute
 import kotlinx.serialization.Serializable
 
-@Serializable
-data object SettingsRoute
 
 @Serializable
 data object SiteSettingsRoute
@@ -15,7 +14,7 @@ data object SiteSettingsRoute
 fun NavGraphBuilder.settingsGraph(
     navController: NavController,
 ) {
-    composable<SettingsRoute> {
+    composable<BottomRoute.SettingsRoute> {
         val siteSettingsViewModel: SiteSettingsViewModel = hiltViewModel()
         SettingsScreen(
             onClickSiteSettings = {

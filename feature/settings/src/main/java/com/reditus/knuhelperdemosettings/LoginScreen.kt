@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.reditus.core.design.common.DefaultLayout
 import com.reditus.knuhelperdemo.data.user.AuthRepository
 import com.reditus.knuhelperdemo.data.user.JwtRepository
 import com.reditus.knuhelperdemo.data.user.JwtToken
@@ -31,15 +32,18 @@ fun SignUpScreen(
     settingViewmodel: SettingViewModel = hiltViewModel(),
     onClickNextScreen: () -> Unit = {},
 ) {
-    SignUpScreen(
-        onClickNextScreen = onClickNextScreen,
-        onLogin = { uuid ->
-            settingViewmodel.login(uuid)
-        },
-        onSignup = { uuid, fcm ->
-            settingViewmodel.signup(uuid, fcm)
-        }
-    )
+    DefaultLayout {
+        SignUpScreen(
+            onClickNextScreen = onClickNextScreen,
+            onLogin = { uuid ->
+                settingViewmodel.login(uuid)
+            },
+            onSignup = { uuid, fcm ->
+                settingViewmodel.signup(uuid, fcm)
+            }
+        )
+    }
+
 }
 
 @Composable

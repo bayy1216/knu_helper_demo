@@ -4,10 +4,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,15 +37,19 @@ import com.reditus.core.design.KnuThemes
 @Composable
 fun DefaultLayout(
     title: String? = null,
+    contentWindowInsets: WindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top),
     topAppBarHeight : Dp = 56.dp,
     navigationIcon: @Composable () -> Unit = {},
     rightActions: @Composable RowScope.() -> Unit = {},
     body: @Composable () -> Unit,
 ) {
     Scaffold(
+        contentWindowInsets = contentWindowInsets,
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             if(title != null) {
                 Surface(
+                    modifier = Modifier.fillMaxWidth(),
                     shadowElevation = 2.dp,
                 ) {
                     /**
@@ -49,8 +58,8 @@ fun DefaultLayout(
                      */
                     TopAppBar(
                         modifier = Modifier
-                            .height(topAppBarHeight)
-                            .fillMaxSize(),
+                            .fillMaxWidth()
+                            .height(topAppBarHeight),
                         colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = Color.White,
                         ),
@@ -81,9 +90,9 @@ fun DefaultLayout(
         },
     ) {
         Box(modifier = Modifier
-            .padding(it)
             .fillMaxSize()
             .background(Color.White)
+            .padding(it)
         ) {
             body()
         }
