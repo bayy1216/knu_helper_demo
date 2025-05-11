@@ -52,7 +52,7 @@ fun NoticeScreen(
                 ErrorContent(
                     errorMsg,
                     onRetry = {
-                        noticeViewModel.refresh()
+                        noticeViewModel.handleIntent(NoticeIntent.Refresh)
                     }
                 )
             }
@@ -64,11 +64,8 @@ fun NoticeScreen(
             is UiState.Success -> {
                 NoticeScreen(
                     notices = state.data,
-                    onLoadMore = {
-                        noticeViewModel.loadMore()
-                    },
-                    onRefresh = {
-                        noticeViewModel.refresh()
+                    onIntent = {
+                        noticeViewModel.handleIntent(it)
                     }
                 )
             }
@@ -78,8 +75,7 @@ fun NoticeScreen(
 
 @Composable
 private fun NoticeScreen(
-    onRefresh: () -> Unit = {},
-    onLoadMore: () -> Unit = {},
+    onIntent: (NoticeIntent)-> Unit = {},
     notices: PagingData<NoticeUiState>,
 ) {
     when (val state = notices.state) {
@@ -88,15 +84,15 @@ private fun NoticeScreen(
         is PagingState.Success -> {
             NoticeListContent(
                 noticeItems = notices.data,
-                onLoadMore = { onLoadMore() },
-                onRefresh = { onRefresh() },
+                onLoadMore = { onIntent(NoticeIntent.LoadMore) },
+                onRefresh = { onIntent(NoticeIntent.Refresh) },
                 hasNext = notices.hasNext,
             )
         }
         is PagingState.Error -> {
             ErrorView(
                 error = state.throwable,
-                onRetry = { onLoadMore() },
+                onRetry = { onIntent(NoticeIntent.LoadMore) },
                 noticeItems = notices.data
             )
         }

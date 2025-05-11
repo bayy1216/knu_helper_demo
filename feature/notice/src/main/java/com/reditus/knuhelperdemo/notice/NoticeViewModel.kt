@@ -1,6 +1,5 @@
 package com.reditus.knuhelperdemo.notice
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.reditus.core.system.PagingData
@@ -66,24 +65,22 @@ class NoticeViewModel @Inject constructor(
             }
         }
 
-        loadInitialData()
+        loadData(page = 0, size = 20, forceRefresh = true)
     }
 
     private var currentSearchQuery: String? = null
     private var currentSiteFilter: String? = null
 
 
-    private fun loadInitialData(
-        site: String? = null,
-        title: String? = null
-    ) {
-        currentSiteFilter = site
-        currentSearchQuery = title
-        loadData(page = 0, size = 20, forceRefresh = true)
+    fun handleIntent(intent: NoticeIntent){
+        when(intent){
+            NoticeIntent.LoadMore -> loadMore()
+            NoticeIntent.Refresh -> refresh()
+        }
     }
 
 
-    fun loadMore() {
+    private fun loadMore() {
         val currentData: PagingData<NoticeUiState> = (_noticePagingState.value as? UiState.Success)?.data ?: return
         if (currentData.state == PagingState.LoadingMore) return
 
@@ -94,8 +91,8 @@ class NoticeViewModel @Inject constructor(
         )
     }
 
-    fun refresh() {
-        loadInitialData(currentSiteFilter, currentSearchQuery)
+    private fun refresh() {
+        loadData(page = 0, size = 20, forceRefresh = true)
     }
 
     private fun loadData(
@@ -103,7 +100,6 @@ class NoticeViewModel @Inject constructor(
         size: Int,
         forceRefresh: Boolean
     ) {
-        Log.d("Notice","size is ${size} by vm")
         viewModelScope.launch {
             try {
                 // 상태 업데이트
