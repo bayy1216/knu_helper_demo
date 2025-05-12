@@ -136,13 +136,7 @@ private fun NoticeListContent(
         ) {
             items(noticeItems.size) { index ->
                 NoticeCard(
-                    title = noticeItems[index].title,
-                    site1st = noticeItems[index].site1st,
-                    site2nd = noticeItems[index].site2nd,
-                    date = noticeItems[index].date,
-                    siteColor = Color(0xFF6200EE),
-                    views = noticeItems[index].views,
-                    favorite = false,
+                    noticeUiState = noticeItems[index],
                     onClick = { /* TODO */ },
                     favoriteOnClick = { /* TODO */ },
                 )
@@ -200,13 +194,7 @@ private fun ErrorView(
             LazyColumn {
                 items(noticeItems.size) { index ->
                     NoticeCard(
-                        title = noticeItems[index].title,
-                        site1st = noticeItems[index].site1st,
-                        site2nd = noticeItems[index].site2nd,
-                        date = noticeItems[index].date,
-                        siteColor = Color(0xFF6200EE),
-                        views = noticeItems[index].views,
-                        favorite = false,
+                        noticeUiState = noticeItems[index],
                         onClick = { /* TODO */ },
                         favoriteOnClick = { /* TODO */ },
                     )
@@ -229,6 +217,8 @@ private fun NoticeScreenPreview() {
             date = LocalDate.of(2023, 10, 1).toString(),
             url = "https://example.com",
             views = 100,
+            siteColor = Color(0xffff33ff),
+            favorite = false,
         )
     )
     val pagingData = PagingData(

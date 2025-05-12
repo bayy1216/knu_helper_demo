@@ -1,5 +1,7 @@
 package com.reditus.knuhelperdemo.notice
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.reditus.core.system.PagingData
@@ -17,14 +19,17 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@Immutable
 data class NoticeUiState(
     val id: Long,
     val title: String,
+    val siteColor: Color,
     val site1st: String,
     val site2nd: String,
     val date: String,
     val url: String,
     val views: Int,
+    val favorite: Boolean,
 ){
     companion object{
         fun from(model: NoticeModel): NoticeUiState {
@@ -32,10 +37,12 @@ data class NoticeUiState(
                 id = model.id,
                 title = model.title,
                 site1st = model.site,
+                siteColor = Color(0xFF6200EE),
                 site2nd = model.type,
                 date = model.date.toString(),
                 url = model.url,
                 views = model.views,
+                favorite = false,
             )
         }
     }
