@@ -79,7 +79,7 @@ fun KnuNavHost(
                         navController.navigate(
                             destination.route,
                             navOptions {
-                                popUpTo(navController.graph.startDestinationId) {
+                                popUpTo(TopLevelDestination.MAIN) {
                                     saveState = true
                                 }
                                 launchSingleTop = true
