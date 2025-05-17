@@ -4,11 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,16 +27,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.reditus.knuhelperdemo.navigation.BottomNavDestination
 import com.reditus.knuhelperdemo.navigation.BottomRoute
 import com.reditus.knuhelperdemo.notice.NoticeScreen
 import com.reditus.knuhelperdemosettings.SignUpScreen
 import com.reditus.knuhelperdemosettings.settingsGraph
-import kotlinx.serialization.Serializable
-import timber.log.Timber
-
 
 
 @Composable
@@ -50,14 +45,20 @@ fun KnuNavHost(
     val currentDestination = navBackStackEntry?.destination
 
     val currentBottomRoute = currentDestination?.let {
-        BottomNavDestination.entries.firstOrNull { route->
+        BottomNavDestination.entries.firstOrNull { route ->
             currentDestination.hasRoute(route.route::class)
         }
+    }
+    val modifier = if(currentBottomRoute != null){
+        Modifier.navigationBarsPadding()
+    }else{
+        Modifier
     }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
-        content = { paddingValues->
+        modifier = modifier,
+        content = { paddingValues ->
             NavHost(
                 navController = navController,
                 startDestination = startDestination,
@@ -69,17 +70,18 @@ fun KnuNavHost(
             }
         },
         bottomBar = {
-            if(currentBottomRoute != null){
+            if (currentBottomRoute != null) {
                 KnuBottomBar(
                     // 내비게이션 바만큼 패딩을 추가하여 겹치지 않게 처리
-                    modifier = Modifier.padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
                     currentDestination = currentBottomRoute,
-                    onDestinationClick = { destination->
-                        navController.navigate(destination.route,
+                    onDestinationClick = { destination ->
+                        navController.navigate(
+                            destination.route,
                             navOptions {
                                 popUpTo(navController.graph.startDestinationId) {
                                     saveState = true
                                 }
+                                launchSingleTop = true
                                 restoreState = true
                             },
                         )
@@ -92,7 +94,7 @@ fun KnuNavHost(
 
 fun NavGraphBuilder.rootGraph(
     navController: NavController
-){
+) {
     composable<TopLevelDestination.START> { backEntry ->
         SignUpScreen(
             onClickNextScreen = {
@@ -126,18 +128,18 @@ fun NavGraphBuilder.rootGraph(
 
 fun NavGraphBuilder.mainGraph(
     navController: NavController
-){
+) {
     navigation<TopLevelDestination.MAIN>(
         startDestination = BottomRoute.NoticeRoute,
-    ){
+    ) {
         composable<BottomRoute.NoticeRoute> { backEntry ->
             NoticeScreen(
-                noticeViewModel = hiltViewModel(),
+                noticeViewModel = hiltViewModel(backEntry),
             )
         }
         composable<BottomRoute.FavoriteRoute> { backEntry ->
             NoticeScreen(
-                noticeViewModel = hiltViewModel(),
+                noticeViewModel = hiltViewModel(backEntry),
             )
         }
         settingsGraph(
@@ -152,8 +154,8 @@ fun KnuBottomBar(
     modifier: Modifier = Modifier,
     height: Dp = 60.dp,
     currentDestination: BottomNavDestination,
-    onDestinationClick: (BottomNavDestination)->Unit,
-){
+    onDestinationClick: (BottomNavDestination) -> Unit,
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -161,7 +163,7 @@ fun KnuBottomBar(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomNavDestination.entries.forEach{destination ->
+        BottomNavDestination.entries.forEach { destination ->
             Column {
                 TextButton(
                     onClick = {
@@ -170,9 +172,9 @@ fun KnuBottomBar(
                 ) {
                     Text(
                         text = destination.name,
-                        color = if(currentDestination == destination){
+                        color = if (currentDestination == destination) {
                             Color.Blue
-                        }else{
+                        } else {
                             Color.Red
                         }
                     )

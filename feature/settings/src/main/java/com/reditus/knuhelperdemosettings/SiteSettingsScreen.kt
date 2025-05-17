@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.reditus.core.design.common.DefaultLayout
 import com.reditus.core.system.UiState
 import com.reditus.knuhelperdemo.data.notice.SiteInfo
 import com.reditus.knuhelperdemo.data.notice.SubscribeModel
@@ -29,13 +30,14 @@ fun SiteSettingsScreen(
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         }
     }
-
-    SiteSettingsScreen(
-        onBack = onBack,
-        handleIntent = siteSettingsViewModel::handleIntent,
-        siteInfos = siteInfos.value,
-        userSubscribeSites = userSubscribeSites.value,
-    )
+    DefaultLayout {
+        SiteSettingsScreen(
+            onBack = onBack,
+            handleIntent = siteSettingsViewModel::handleIntent,
+            siteInfos = siteInfos.value,
+            userSubscribeSites = userSubscribeSites.value,
+        )
+    }
 }
 
 @Composable
@@ -56,6 +58,7 @@ private fun SiteSettingsScreen(
             is UiState.Loading -> {
                 // Show loading
             }
+
             is UiState.Success -> {
                 userSubscribeSites.data.forEach { subscribe ->
                     Text(text = subscribe.site)
@@ -63,6 +66,7 @@ private fun SiteSettingsScreen(
                     Text(text = subscribe.isAlarm.toString())
                 }
             }
+
             is UiState.Error -> {
                 // Show error
             }
@@ -72,12 +76,14 @@ private fun SiteSettingsScreen(
             is UiState.Loading -> {
                 // Show loading
             }
+
             is UiState.Success -> {
                 siteInfos.data.forEach { siteInfo ->
                     Text(text = siteInfo.siteCategoryKorean)
                     Text(text = siteInfo.site)
                 }
             }
+
             is UiState.Error -> {
                 // Show error
             }

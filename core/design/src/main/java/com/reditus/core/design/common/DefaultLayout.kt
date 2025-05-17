@@ -5,20 +5,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -37,8 +35,9 @@ import com.reditus.core.design.KnuThemes
 @Composable
 fun DefaultLayout(
     title: String? = null,
-    contentWindowInsets: WindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top),
-    topAppBarHeight : Dp = 56.dp,
+    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    contentBackgroundColor:Color = Color.White,
+    topAppBarHeight: Dp = 56.dp,
     navigationIcon: @Composable () -> Unit = {},
     rightActions: @Composable RowScope.() -> Unit = {},
     body: @Composable () -> Unit,
@@ -47,7 +46,7 @@ fun DefaultLayout(
         contentWindowInsets = contentWindowInsets,
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            if(title != null) {
+            if (title != null) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shadowElevation = 2.dp,
@@ -68,7 +67,7 @@ fun DefaultLayout(
                             Box(
                                 modifier = Modifier.fillMaxHeight(),
                                 contentAlignment = Alignment.Center
-                            ){
+                            ) {
                                 Text(
                                     text = title,
                                     style = KnuThemes.typography.titleLarge,
@@ -76,11 +75,11 @@ fun DefaultLayout(
                             }
 
                         },
-                        actions =  {
+                        actions = {
                             Row(
                                 modifier = Modifier.fillMaxHeight(),
                                 verticalAlignment = Alignment.CenterVertically,
-                            ){
+                            ) {
                                 rightActions()
                             }
                         }
@@ -89,10 +88,11 @@ fun DefaultLayout(
             }
         },
     ) {
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(it)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(contentBackgroundColor)
+                .padding(it)
         ) {
             body()
         }
@@ -121,7 +121,7 @@ private fun DefaultLayoutPreview() {
                     )
                 }
             },
-            rightActions ={
+            rightActions = {
                 Text(text = "Actions")
             }
         ) {
