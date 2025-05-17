@@ -1,25 +1,17 @@
 package com.reditus.knuhelperdemo.notice
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
@@ -78,25 +70,16 @@ private fun NoticeScreen(
     onIntent: (NoticeIntent)-> Unit = {},
     notices: PagingData<NoticeUiState>,
 ) {
-    when (val state = notices.state) {
-        is PagingState.ForceRefreshing,
-        is PagingState.LoadingMore,
-        is PagingState.Success -> {
-            NoticeListContent(
-                noticeItems = notices.data,
-                onLoadMore = { onIntent(NoticeIntent.LoadMore) },
-                onRefresh = { onIntent(NoticeIntent.Refresh) },
-                hasNext = notices.hasNext,
-            )
-        }
-        is PagingState.Error -> {
-            ErrorView(
-                error = state.throwable,
-                onRetry = { onIntent(NoticeIntent.LoadMore) },
-                noticeItems = notices.data
-            )
-        }
-    }
+    val state = notices.state
+    val error = state as? PagingState.Error
+    NoticeListContent(
+        noticeItems = notices.data,
+        onLoadMore = { onIntent(NoticeIntent.LoadMore) },
+        onRefresh = { onIntent(NoticeIntent.Refresh) },
+        hasNext = notices.hasNext,
+        error = error?.throwable,
+        onRetry = { onIntent(NoticeIntent.LoadMore) },
+    )
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -105,7 +88,9 @@ private fun NoticeListContent(
     noticeItems: List<NoticeUiState>,
     onLoadMore: () -> Unit,
     onRefresh: () -> Unit,
-    hasNext: Boolean = false
+    hasNext: Boolean = false,
+    error: Throwable?,
+    onRetry: () -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
     // 스크롤 위치 감지하여 추가 데이터 로드
@@ -134,7 +119,10 @@ private fun NoticeListContent(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(8.dp)
         ) {
-            items(noticeItems.size) { index ->
+            items(
+                count = noticeItems.size,
+                key={ index-> noticeItems[index].id }
+            ) { index ->
                 NoticeCard(
                     noticeUiState = noticeItems[index],
                     onClick = { /* TODO */ },
@@ -155,6 +143,22 @@ private fun NoticeListContent(
                     }
                 }
             }
+            if(error != null){
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ){
+                        ErrorContent(
+                            error.message
+                        ) {
+                            onRetry()
+                        }
+                    }
+                }
+            }
         }
 
         PullRefreshIndicator(
@@ -162,45 +166,6 @@ private fun NoticeListContent(
             state = pullRefreshState,
             modifier = Modifier.align(Alignment.TopCenter)
         )
-    }
-}
-
-
-@Composable
-private fun ErrorView(
-    error: Throwable,
-    onRetry: () -> Unit,
-    noticeItems: List<NoticeUiState>?
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Error: ${error.localizedMessage}",
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onRetry) {
-            Text("Retry")
-        }
-
-        // 에러 발생 시 기존 데이터가 있으면 표시
-        noticeItems?.let {
-            Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn {
-                items(noticeItems.size) { index ->
-                    NoticeCard(
-                        noticeUiState = noticeItems[index],
-                        onClick = { /* TODO */ },
-                        favoriteOnClick = { /* TODO */ },
-                    )
-                }
-            }
-        }
     }
 }
 
