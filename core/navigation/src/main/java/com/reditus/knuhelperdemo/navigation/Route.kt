@@ -22,3 +22,19 @@ sealed interface BottomRoute{
     @Serializable
     data object SettingsRoute: BottomRoute
 }
+
+
+sealed class TopLevelDestination() {
+    @Serializable
+    data object START : TopLevelDestination()
+    @Serializable
+    data object AUTH : TopLevelDestination()
+    @Serializable
+    data object MAIN : TopLevelDestination()
+
+    companion object {
+        fun valueLists(): List<TopLevelDestination> {
+            return listOf(START, AUTH, MAIN)
+        }
+    }
+}

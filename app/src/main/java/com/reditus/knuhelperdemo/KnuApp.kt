@@ -1,6 +1,5 @@
 package com.reditus.knuhelperdemo
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -25,11 +23,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.reditus.core.system.NetworkMonitor
+import com.reditus.knuhelperdemo.navigation.TopLevelDestination
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.serialization.Serializable
 import timber.log.Timber
 
 
@@ -117,19 +115,4 @@ class KnuAppState(
             initialValue = false,
         )
 
-}
-
-sealed class TopLevelDestination() {
-    @Serializable
-    data object START : TopLevelDestination()
-    @Serializable
-    data object AUTH : TopLevelDestination()
-    @Serializable
-    data object MAIN : TopLevelDestination()
-
-    companion object {
-        fun valueLists(): List<TopLevelDestination> {
-            return listOf(START, AUTH, MAIN)
-        }
-    }
 }

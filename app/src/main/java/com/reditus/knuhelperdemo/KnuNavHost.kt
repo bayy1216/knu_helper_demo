@@ -30,6 +30,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navOptions
 import com.reditus.knuhelperdemo.navigation.BottomNavDestination
 import com.reditus.knuhelperdemo.navigation.BottomRoute
+import com.reditus.knuhelperdemo.navigation.TopLevelDestination
 import com.reditus.knuhelperdemo.notice.NoticeScreen
 import com.reditus.knuhelperdemosettings.SignUpScreen
 import com.reditus.knuhelperdemosettings.settingsGraph
@@ -133,13 +134,15 @@ fun NavGraphBuilder.mainGraph(
         startDestination = BottomRoute.NoticeRoute,
     ) {
         composable<BottomRoute.NoticeRoute> { backEntry ->
+            val entry = navController.getBackStackEntry(TopLevelDestination.MAIN)
             NoticeScreen(
-                noticeViewModel = hiltViewModel(backEntry),
+                noticeViewModel = hiltViewModel(entry),
             )
         }
         composable<BottomRoute.FavoriteRoute> { backEntry ->
+            val entry = navController.getBackStackEntry(TopLevelDestination.MAIN)
             NoticeScreen(
-                noticeViewModel = hiltViewModel(backEntry),
+                noticeViewModel = hiltViewModel(entry),
             )
         }
         settingsGraph(
