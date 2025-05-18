@@ -4,10 +4,13 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.room.Room
 import com.reditus.knuhelperdemo.data.common.ktor.setupAuth
 import com.reditus.knuhelperdemo.data.common.ktor.setupJson
 import com.reditus.knuhelperdemo.data.common.ktor.setupLogging
 import com.reditus.knuhelperdemo.data.common.ktor.setupServer
+import com.reditus.knuhelperdemo.data.common.room.KnuDatabase
+import com.reditus.knuhelperdemo.data.favorite.FavoriteNoticeDao
 import com.reditus.knuhelperdemo.data.user.JwtRepository
 import dagger.Module
 import dagger.Provides
@@ -16,6 +19,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import javax.inject.Singleton
@@ -53,5 +57,24 @@ object DataModule {
         return PreferenceDataStoreFactory.create(
             produceFile = { context.applicationContext.filesDir.resolve(KNU_DATASTORE) }
         )
+    }
+
+    @Singleton
+    @Provides
+    fun provideRoomDatabase(
+        @ApplicationContext context: Context,
+    ): KnuDatabase {
+        return Room.databaseBuilder(
+            context,
+            KnuDatabase::class.java,
+            "knu_database"
+        ).setQueryCoroutineContext(Dispatchers.IO)
+        .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideFavoriteNoticeDao(database: KnuDatabase): FavoriteNoticeDao {
+        return database.favoriteNoticeDao()
     }
 }

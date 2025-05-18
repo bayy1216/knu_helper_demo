@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.hilt)
     id(libs.plugins.kotlin.kapt.get().pluginId)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
 }
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
@@ -59,6 +60,15 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    //room
+    implementation(libs.androidx.room.runtime)
+    // If this project uses any Kotlin source, use Kotlin Symbol Processing (KSP)
+    // See Add the KSP plugin to your project
+    ksp(libs.androidx.room.compiler)
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation(libs.androidx.room.ktx)
+
 }
 
 kapt {
