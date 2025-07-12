@@ -63,7 +63,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation ("androidx.compose.material:material:1.5.4") // PullToRefresh를 위해 추가
 
-
+    implementation(libs.arrow.core)
+    implementation(libs.arrow.fx.coroutines)
 
     implementation(project(":data"))
     implementation(project(":core:design"))

@@ -63,7 +63,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-
+    implementation(libs.arrow.core)
+    implementation(libs.arrow.fx.coroutines)
 
 
     implementation(project(":data"))
