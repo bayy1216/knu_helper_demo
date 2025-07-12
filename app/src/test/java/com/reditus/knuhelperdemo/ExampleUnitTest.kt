@@ -180,34 +180,34 @@ data class CountUiState(
         }
     }
 }
-
-class ItemViewModel(
-    private val itemRepository: ItemRepository,
-) : ViewModel() {
-    val itemUiState: StateFlow<UiState<CountUiState>> = itemRepository.getItemCountFlow()
-        .map<Int, UiState<CountUiState>> { UiState.Success(CountUiState.from(it)) }
-        .catch { e -> emit(UiState.Error(e)) }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = UiState.Loading
-        )
-
-
-    private val _sideEffect = Channel<String>(Channel.BUFFERED)
-    val sideEffect = _sideEffect.receiveAsFlow()
-
-
-    fun setCount(count: Int) {
-        viewModelScope.launch {
-            try {
-                itemRepository.setCount(count)
-            } catch (e: Exception) {
-                _sideEffect.send("Error: ${e.message}")
-            }
-        }
-    }
-}
+//
+//class ItemViewModel(
+//    private val itemRepository: ItemRepository,
+//) : ViewModel() {
+//    val itemUiState: StateFlow<UiState<CountUiState>> = itemRepository.getItemCountFlow()
+//        .map<Int, UiState<CountUiState>> { UiState.Success(CountUiState.from(it)) }
+//        .catch { e -> emit(UiState.Error(e)) }
+//        .stateIn(
+//            scope = viewModelScope,
+//            started = SharingStarted.WhileSubscribed(5000),
+//            initialValue = UiState.Loading
+//        )
+//
+//
+//    private val _sideEffect = Channel<String>(Channel.BUFFERED)
+//    val sideEffect = _sideEffect.receiveAsFlow()
+//
+//
+//    fun setCount(count: Int) {
+//        viewModelScope.launch {
+//            try {
+//                itemRepository.setCount(count)
+//            } catch (e: Exception) {
+//                _sideEffect.send("Error: ${e.message}")
+//            }
+//        }
+//    }
+//}
 
 
 class TestFlow {

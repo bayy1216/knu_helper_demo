@@ -2,7 +2,11 @@ package com.reditus.knuhelperdemosettings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import arrow.core.Either
 import com.reditus.core.system.UiState
+import com.reditus.core.system.toUiState
+import com.reditus.knuhelperdemo.data.common.ServerError
+import com.reditus.knuhelperdemo.data.notice.NoticeInfoRes
 import com.reditus.knuhelperdemo.data.notice.NoticeRepository
 import com.reditus.knuhelperdemo.data.notice.SiteInfo
 import com.reditus.knuhelperdemo.data.notice.SubscribeModel
@@ -10,7 +14,6 @@ import com.reditus.knuhelperdemo.data.notice.UserSubscribeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -22,10 +25,10 @@ class SiteSettingsViewModel @Inject constructor(
     private val noticeRepository: NoticeRepository,
     private val userSubscribeRepository: UserSubscribeRepository,
 ) :ViewModel(){
-    private val _sites = MutableStateFlow<UiState<List<SiteInfo>>>(UiState.Loading)
+    private val _sites = MutableStateFlow<UiState<List<SiteInfo>,ServerError>>(UiState.Loading)
     val sites = _sites.asStateFlow() /// 사이트 정보
 
-    private val _userSubscribeSites = MutableStateFlow<UiState<List<SubscribeModel>>>(UiState.Loading)
+    private val _userSubscribeSites = MutableStateFlow<UiState<List<SubscribeModel>,ServerError>>(UiState.Loading)
     val userSubscribeSites = _userSubscribeSites.asStateFlow() /// 구독 사이트 정보
 
     private val _errorToast = Channel<String>(Channel.BUFFERED)
@@ -34,11 +37,9 @@ class SiteSettingsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            try {
-                val siteInfo = noticeRepository.getSiteInfo()
-                _sites.value = UiState.Success(siteInfo.siteInfoList)
-            } catch (e: Exception) {
-                _sites.value = UiState.Error(e)
+            val res: Either<ServerError, NoticeInfoRes> = noticeRepository.getSiteInfo()
+            _sites.update {
+                res.map { it.siteInfoList }.toUiState()
             }
         }
     }
@@ -70,19 +71,24 @@ class SiteSettingsViewModel @Inject constructor(
                     return@launch
                 }
             }
-            try{
-                userSubscribeRepository.addSubscribe(intent.toReq())
-                _userSubscribeSites.update {
-                    if(it is UiState.Success) {
-                        val newList = it.data + intent.toModel()
-                        UiState.Success(newList)
-                    } else {
-                        it
+            val res: Either<ServerError, Unit> = userSubscribeRepository.addSubscribe(intent.toReq())
+            res.fold(
+                ifLeft = { err->
+                    _userSubscribeSites.update {
+                        UiState.Error(err)
+                    }
+                },
+                ifRight = {_->
+                    _userSubscribeSites.update {
+                        if(it is UiState.Success) {
+                            val newList = it.data + intent.toModel()
+                            UiState.Success(newList)
+                        } else {
+                            it
+                        }
                     }
                 }
-            }catch (e: Exception) {
-                _userSubscribeSites.value = UiState.Error(e)
-            }
+            )
         }
     }
 
@@ -97,21 +103,26 @@ class SiteSettingsViewModel @Inject constructor(
                     return@launch
                 }
             }
-            try{
-                userSubscribeRepository.updateSubscribe(intent.toReq())
-                _userSubscribeSites.update {
-                    if(it is UiState.Success) {
-                        val newList = it.data.map { subscribe ->
-                            if(subscribe.site == intent.site) { intent.toModel() } else { subscribe }
+            val res: Either<ServerError, Unit> = userSubscribeRepository.updateSubscribe(intent.toReq())
+            res.fold(
+                ifLeft = { err->
+                    _userSubscribeSites.update {
+                        UiState.Error(err)
+                    }
+                },
+                ifRight = { _->
+                    _userSubscribeSites.update {
+                        if(it is UiState.Success) {
+                            val newList = it.data.map { subscribe ->
+                                if(subscribe.site == intent.site) { intent.toModel() } else { subscribe }
+                            }
+                            UiState.Success(newList)
+                        } else {
+                            it
                         }
-                        UiState.Success(newList)
-                    } else {
-                        it
                     }
                 }
-            }catch (e: Exception) {
-                _userSubscribeSites.value = UiState.Error(e)
-            }
+            )
         }
     }
 
@@ -126,21 +137,24 @@ class SiteSettingsViewModel @Inject constructor(
                     return@launch
                 }
             }
-            try{
-                userSubscribeRepository.deleteSubscribe(intent.toReq())
-                _userSubscribeSites.update {
-                    if(it is UiState.Success) {
-                        val newList = it.data.filter { subscribe ->
-                            subscribe.site != intent.site
+            val res: Either<ServerError, Unit> =  userSubscribeRepository.deleteSubscribe(intent.toReq())
+            res.fold(
+                ifLeft = {err->
+                    _userSubscribeSites.value = UiState.Error(err)
+                },
+                ifRight = {_->
+                    _userSubscribeSites.update {
+                        if(it is UiState.Success) {
+                            val newList = it.data.filter { subscribe ->
+                                subscribe.site != intent.site
+                            }
+                            UiState.Success(newList)
+                        } else {
+                            it
                         }
-                        UiState.Success(newList)
-                    } else {
-                        it
                     }
                 }
-            }catch (e: Exception) {
-                _userSubscribeSites.value = UiState.Error(e)
-            }
+            )
         }
     }
 

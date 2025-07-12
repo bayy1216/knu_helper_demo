@@ -7,7 +7,9 @@ import com.reditus.knuhelperdemo.data.user.JwtRepository
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIOEngineConfig
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.DefaultRequest
+import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.authProvider
 import io.ktor.client.plugins.auth.providers.BearerAuthProvider
@@ -114,6 +116,16 @@ fun HttpClientConfig<CIOEngineConfig>.setupAuth(
                 Log.d("Request", "Not Apply JWT Request: ${shouldNotJwt}")
                 !shouldNotJwt
             }
+        }
+    }
+}
+
+fun HttpClientConfig<CIOEngineConfig>.setupErrorHandling(){
+    expectSuccess = true
+    HttpResponseValidator {
+        handleResponseExceptionWithRequest { exception, request ->
+            val clientException = exception as? ClientRequestException ?: return@handleResponseExceptionWithRequest
+            throw KnuhelperServerError.from(clientException)
         }
     }
 }

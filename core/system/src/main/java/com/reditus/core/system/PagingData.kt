@@ -1,16 +1,16 @@
 package com.reditus.core.system
 
-data class PagingData<T>(
+data class PagingData<T, ERROR>(
     val data: List<T>,
     val page: Int,
     val hasNext: Boolean,
-    val state: PagingState,
+    val state: PagingState<ERROR>,
 ) {
 }
 
-sealed class PagingState {
-    data object Success : PagingState()
-    data object LoadingMore : PagingState()
-    data object ForceRefreshing : PagingState()
-    data class Error(val throwable: Throwable) : PagingState()
+sealed class PagingState<out E> {
+    data object Success : PagingState<Nothing>()
+    data object LoadingMore : PagingState<Nothing>()
+    data object ForceRefreshing : PagingState<Nothing>()
+    data class Error<E>(val error: E) : PagingState<E>()
 }

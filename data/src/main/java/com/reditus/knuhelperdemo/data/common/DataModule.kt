@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import com.reditus.knuhelperdemo.data.common.ktor.setupAuth
+import com.reditus.knuhelperdemo.data.common.ktor.setupErrorHandling
 import com.reditus.knuhelperdemo.data.common.ktor.setupJson
 import com.reditus.knuhelperdemo.data.common.ktor.setupLogging
 import com.reditus.knuhelperdemo.data.common.ktor.setupServer
@@ -45,6 +46,7 @@ object DataModule {
                 jwtRepository = jwtRepository,
                 sendWithoutJwtUrls = sendWithoutJwtUrls,
             )
+            setupErrorHandling()
         }
         return client
     }
