@@ -18,9 +18,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import arrow.core.Either
 import com.reditus.core.design.common.DefaultLayout
+import com.reditus.knuhelperdemo.data.common.ServerError
 import com.reditus.knuhelperdemo.data.user.AuthRepository
 import com.reditus.knuhelperdemo.data.user.JwtRepository
+import com.reditus.knuhelperdemo.data.user.JwtRes
 import com.reditus.knuhelperdemo.data.user.JwtToken
 import com.reditus.knuhelperdemo.data.user.SignupReq
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -97,6 +100,10 @@ private fun SignUpScreen(
 }
 
 
+fun JwtRes.toJwtToken() = JwtToken(
+    accessToken= accessToken,
+    refreshToken = refreshToken,
+)
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
@@ -108,16 +115,19 @@ class SettingViewModel @Inject constructor(
         fcm: String,
     ){
         viewModelScope.launch {
-            val jwtRes = authRepository.signup(
-                SignupReq(
-                    uuid = uuid,
-                    fcmToken = fcm,
-                )
+            val req = SignupReq(
+                uuid = uuid,
+                fcmToken = fcm,
             )
-            jwtRepository.save(JwtToken(
-                accessToken = jwtRes.accessToken,
-                refreshToken = jwtRes.refreshToken,
-            ))
+            val res: Either<ServerError, JwtRes> = authRepository.signup(req)
+            res.fold(
+                ifLeft = {
+                    //doNothing
+                },
+                ifRight = {jwtRes->
+                    jwtRepository.save(jwtRes.toJwtToken())
+                }
+            )
         }
     }
 
@@ -125,11 +135,15 @@ class SettingViewModel @Inject constructor(
         uuid: String,
     ){
         viewModelScope.launch {
-            val jwtRes = authRepository.login(uuid)
-            jwtRepository.save(JwtToken(
-                accessToken = jwtRes.accessToken,
-                refreshToken = jwtRes.refreshToken,
-            ))
+            val res = authRepository.login(uuid)
+            res.fold(
+                ifLeft = {
+                    //doNothing
+                },
+                ifRight = {jwtRes->
+                    jwtRepository.save(jwtRes.toJwtToken())
+                }
+            )
         }
     }
 }

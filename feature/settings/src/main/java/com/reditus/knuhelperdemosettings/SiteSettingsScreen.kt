@@ -14,6 +14,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.reditus.core.design.common.DefaultLayout
 import com.reditus.core.system.UiState
+import com.reditus.knuhelperdemo.data.common.ServerError
 import com.reditus.knuhelperdemo.data.notice.SiteInfo
 import com.reditus.knuhelperdemo.data.notice.SubscribeModel
 
@@ -44,8 +45,8 @@ fun SiteSettingsScreen(
 private fun SiteSettingsScreen(
     onBack: () -> Unit,
     handleIntent: (SiteSettingsIntent) -> Unit = {},
-    siteInfos: UiState<List<SiteInfo>>,
-    userSubscribeSites: UiState<List<SubscribeModel>>,
+    siteInfos: UiState<List<SiteInfo>,ServerError>,
+    userSubscribeSites: UiState<List<SubscribeModel>,ServerError>,
 ) {
 
     Column(
