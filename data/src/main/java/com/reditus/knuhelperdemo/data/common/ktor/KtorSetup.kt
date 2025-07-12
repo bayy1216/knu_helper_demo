@@ -125,11 +125,7 @@ fun HttpClientConfig<CIOEngineConfig>.setupErrorHandling(){
     HttpResponseValidator {
         handleResponseExceptionWithRequest { exception, request ->
             val clientException = exception as? ClientRequestException ?: return@handleResponseExceptionWithRequest
-            val exceptionResponse = clientException.response
-            throw KnuhelperServerError(
-                message = exceptionResponse.body(),//TODO
-                code = exceptionResponse.status.value
-            )
+            throw KnuhelperServerError.from(clientException)
         }
     }
 }
