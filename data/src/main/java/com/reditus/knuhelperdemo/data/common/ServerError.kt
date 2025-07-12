@@ -3,9 +3,12 @@ package com.reditus.knuhelperdemo.data.common
 import com.reditus.knuhelperdemo.data.common.ktor.KnuhelperServerError
 
 sealed interface ServerError {
-    data object Unknown : ServerError
+    val message: String
+    data object Unknown : ServerError{
+        override val message: String = "Unknown Error"
+    }
     data class ErrorResponse(
-        val message: String,
+        override val message: String,
         val code: Int,
     ) : ServerError
 }

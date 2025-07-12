@@ -33,7 +33,8 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     kapt(libs.dagger.hilt.compiler)
-
+    implementation(libs.arrow.core)
+    implementation(libs.arrow.fx.coroutines)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

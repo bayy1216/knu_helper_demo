@@ -4,13 +4,18 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import arrow.core.Either
 import com.reditus.core.system.PagingData
 import com.reditus.core.system.PagingState
 import com.reditus.core.system.UiState
+import com.reditus.core.system.toUiState
+import com.reditus.knuhelperdemo.data.common.PagingRes
+import com.reditus.knuhelperdemo.data.common.ServerError
 import com.reditus.knuhelperdemo.data.notice.NoticeModel
 import com.reditus.knuhelperdemo.data.notice.NoticePagingReq
 import com.reditus.knuhelperdemo.data.notice.NoticeRepository
 import com.reditus.knuhelperdemo.data.notice.SubscribeModel
+import com.reditus.knuhelperdemo.data.notice.SubscribesRes
 import com.reditus.knuhelperdemo.data.notice.UserSubscribeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,22 +58,16 @@ class NoticeViewModel @Inject constructor(
     private val noticeRepository: NoticeRepository,
     private val userSubscribeRepository: UserSubscribeRepository,
 ) :ViewModel(){
-    private val _noticePagingState = MutableStateFlow<UiState<PagingData<NoticeUiState>>>(UiState.Loading)
+    private val _noticePagingState = MutableStateFlow<UiState<PagingData<NoticeUiState, ServerError>,ServerError>>(UiState.Loading)
     val noticePagingState = _noticePagingState.asStateFlow()
 
-    private val _userSubscribeSites = MutableStateFlow<UiState<List<SubscribeModel>>>(UiState.Loading)
+    private val _userSubscribeSites = MutableStateFlow<UiState<List<SubscribeModel>,ServerError>>(UiState.Loading)
 
     init {
         viewModelScope.launch {
-            try{
-                val userSubScribes = userSubscribeRepository.getSubscribes()
-                _userSubscribeSites.update {
-                    UiState.Success(userSubScribes.data)
-                }
-            }catch (e: Exception){
-                _userSubscribeSites.update {
-                    UiState.Error(e)
-                }
+            val result: Either<ServerError, SubscribesRes> = userSubscribeRepository.getSubscribes()
+            _userSubscribeSites.update {
+                result.map{ it.data }.toUiState()
             }
         }
 
@@ -88,7 +87,7 @@ class NoticeViewModel @Inject constructor(
 
 
     private fun loadMore() {
-        val currentData: PagingData<NoticeUiState> = (_noticePagingState.value as? UiState.Success)?.data ?: return
+        val currentData: PagingData<NoticeUiState, ServerError> = (_noticePagingState.value as? UiState.Success)?.data ?: return
         if (currentData.state == PagingState.LoadingMore) return
 
         loadData(
@@ -108,49 +107,51 @@ class NoticeViewModel @Inject constructor(
         forceRefresh: Boolean
     ) {
         viewModelScope.launch {
-            try {
-                // 상태 업데이트
-                updatePagingState(
-                    newState = if (forceRefresh) PagingState.ForceRefreshing else PagingState.LoadingMore,
-                    newPage = page,
-                    keepData = !forceRefresh
-                )
+            // 상태 업데이트
+            updatePagingState(
+                newState = if (forceRefresh) PagingState.ForceRefreshing else PagingState.LoadingMore,
+                newPage = page,
+                keepData = !forceRefresh
+            )
 
-                // API 호출
-                val req = NoticePagingReq(
-                    page = page,
-                    size = size,
-                    site = currentSiteFilter,
-                    title = currentSearchQuery
-                )
-                val response = noticeRepository.getNoticePaging(req)
+            // API 호출
+            val req = NoticePagingReq(
+                page = page,
+                size = size,
+                site = currentSiteFilter,
+                title = currentSearchQuery
+            )
+            val response: Either<ServerError, PagingRes<NoticeModel>> = noticeRepository.getNoticePaging(req)
 
-                // 결과 처리
-                val newData = response.data.map { NoticeUiState.from(it) }
-
-                updatePagingState(
-                    newData = if (page == 0) newData else {
-                        val currentData = (_noticePagingState.value as? UiState.Success)?.data?.data ?: emptyList()
-                        currentData + newData
-                    },
-                    newPage = page,
-                    hasNext = response.hasNext,
-                    newState = PagingState.Success
-                )
-
-            } catch (e: Exception) {
-                if(page == 0){// 첫 페이지 로드 실패 시 기존 데이터 유지하지 않음
-                    _noticePagingState.update{
-                        UiState.Error(e)
+            response.fold(
+                ifLeft = { err->
+                    if(page == 0){// 첫 페이지 로드 실패 시 기존 데이터 유지하지 않음
+                        _noticePagingState.update{
+                            UiState.Error(err)
+                        }
+                    }else{
+                        updatePagingState(
+                            newState = PagingState.Error(err),
+                            newPage = page,
+                            keepData = true
+                        )
                     }
-                }else{
+                },
+                ifRight = { res ->
+                    // 결과 처리
+                    val newData = res.data.map { NoticeUiState.from(it) }
+
                     updatePagingState(
-                        newState = PagingState.Error(e),
+                        newData = if (page == 0) newData else {
+                            val currentData = (_noticePagingState.value as? UiState.Success)?.data?.data ?: emptyList()
+                            currentData + newData
+                        },
                         newPage = page,
-                        keepData = true
+                        hasNext = res.hasNext,
+                        newState = PagingState.Success
                     )
                 }
-            }
+            )
         }
     }
 
@@ -158,7 +159,7 @@ class NoticeViewModel @Inject constructor(
         newData: List<NoticeUiState>? = null,
         newPage: Int? = null,
         hasNext: Boolean? = null,
-        newState: PagingState? = null,
+        newState: PagingState<ServerError>? = null,
         keepData: Boolean = true
     ) {
         _noticePagingState.update { currentState ->

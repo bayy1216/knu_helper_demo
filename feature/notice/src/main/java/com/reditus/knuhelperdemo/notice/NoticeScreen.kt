@@ -30,6 +30,7 @@ import com.reditus.core.design.notice.NoticeCard
 import com.reditus.core.system.PagingData
 import com.reditus.core.system.PagingState
 import com.reditus.core.system.UiState
+import com.reditus.knuhelperdemo.data.common.ServerError
 import java.time.LocalDate
 
 @Composable
@@ -40,7 +41,7 @@ fun NoticeScreen(
     DefaultLayout {
         when (val state = notices.value) {
             is UiState.Error -> {
-                val errorMsg = state.exception.message
+                val errorMsg = state.error.message
                 ErrorContent(
                     errorMsg,
                     onRetry = {
@@ -68,7 +69,7 @@ fun NoticeScreen(
 @Composable
 private fun NoticeScreen(
     onIntent: (NoticeIntent)-> Unit = {},
-    notices: PagingData<NoticeUiState>,
+    notices: PagingData<NoticeUiState, ServerError>,
 ) {
     val state = notices.state
     val error = state as? PagingState.Error
@@ -77,7 +78,7 @@ private fun NoticeScreen(
         onLoadMore = { onIntent(NoticeIntent.LoadMore) },
         onRefresh = { onIntent(NoticeIntent.Refresh) },
         hasNext = notices.hasNext,
-        error = error?.throwable,
+        error = error?.error?.message,
         onRetry = { onIntent(NoticeIntent.LoadMore) },
     )
 }
@@ -89,7 +90,7 @@ private fun NoticeListContent(
     onLoadMore: () -> Unit,
     onRefresh: () -> Unit,
     hasNext: Boolean = false,
-    error: Throwable?,
+    error: String?,
     onRetry: () -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
@@ -152,7 +153,7 @@ private fun NoticeListContent(
                         contentAlignment = Alignment.Center
                     ){
                         ErrorContent(
-                            error.message
+                            error
                         ) {
                             onRetry()
                         }
@@ -186,7 +187,7 @@ private fun NoticeScreenPreview() {
             favorite = false,
         )
     )
-    val pagingData = PagingData(
+    val pagingData = PagingData<NoticeUiState, ServerError>(
         data = data,
         state = PagingState.LoadingMore,
         page = 0,
