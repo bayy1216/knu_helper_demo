@@ -1,31 +1,11 @@
 plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.reditus.android.library)
     alias(libs.plugins.hilt)
     id(libs.plugins.kotlin.kapt.get().pluginId)
 }
 
 android {
     namespace = "com.reditus.system"
-    compileSdk = 35
-
-    defaultConfig {
-        minSdk = 27
-    }
-
-    buildTypes {
-        release {
-            consumerProguardFiles("consumer-rules.pro")
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 dependencies {
